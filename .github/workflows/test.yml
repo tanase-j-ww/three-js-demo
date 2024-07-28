@@ -1,0 +1,38 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - "**"
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test:
+    # runs-on: ubuntu-latest
+    runs-on: [self-hosted, ubuntu]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.9.0
+      - run: npm ci
+      - name: Set sha_short
+        id: vars
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+      - name: Create dot env file
+        shell: bash
+        run: |
+          touch .env
+          echo "VITE_APP_VERSION_HASH=$(node -p -e "require('./package.json').version").${{ steps.vars.outputs.sha_short }}" >> .env
+      - name: Test
+        run: npm run test
+      - name: format
+        run: npm run format:ci
+      - name: lint
+        run: npm run lint:ci
+      - name: Build
+        run: bash scripts/build/build.sh

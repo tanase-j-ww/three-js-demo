@@ -1,0 +1,26 @@
+name: Auto Assign Author
+
+on:
+  pull_request:
+    types: [opened]
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  assign:
+    if: github.actor != 'dependabot[bot]'
+
+    name: Assign author to PR
+    # runs-on: ubuntu-latest
+    runs-on: [self-hosted, ubuntu]
+    timeout-minutes: 5
+    steps:
+      - name: Assign author to PR
+        uses: technote-space/assign-author@v1
+
+      - name: Notificate Alert
+        run: |
+          echo "## :anger: Make sure you assign yourself" >> "${GITHUB_STEP_SUMMARY}"
+          echo "${{ github.actor }}, You should assign yourself" >> "${GITHUB_STEP_SUMMARY}"
